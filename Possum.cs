@@ -1,7 +1,7 @@
 /***************************************************************
 *file: Possum.cs
 *author: Marie Philavong & Xavier Felix
-*class: CS 4700 – Game Development
+*class: CS 4700 â€“ Game Development
 *assignment: Program 3
 *date last modified: 10/05/24
 *
@@ -24,7 +24,7 @@ public class Possum : MonoBehaviour
     public int maxHealth = 15; // max health of the boss
     public float movementSpeed = 2.0f; // movement speed
     public float attackCooldown = 6.0f; // time between attacks
-    public float attackRange = 10.0f; // distance when boss will attack player
+    public float attackRange = 15.0f; // distance when boss will attack player
     private float nextAttackTime; // when the boss can attack again
 
     public GameObject garbagePrefab; // prefab for the garbage thrown by the boss
@@ -52,14 +52,15 @@ public class Possum : MonoBehaviour
     }
 
     // function: Move
-    // purpose: moves the boss towards the player if they are outside of the attack range,
-    //          and updates the boss's movement animation
+    // purpose: moves the boss towards the player only when the player is within the attack range.
+    //          it also updates the boss's movement animation and facing direction accordingly.
+    //          if the player is outside the attack range, the boss remains idle
     void Move()
     {
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
 
-        // move the boss towards the player if outside attack range
-        if(distanceToPlayer > attackRange)
+        // move the boss towards the player only if they are within the attack range
+        if(distanceToPlayer <= attackRange && distanceToPlayer > 1.0f)
         {
             Vector2 direction = (player.position - transform.position).normalized;
             transform.position = Vector2.MoveTowards(transform.position, player.position, movementSpeed * Time.deltaTime);
