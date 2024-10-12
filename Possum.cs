@@ -3,10 +3,11 @@
 *author: Marie Philavong & Xavier Felix
 *class: CS 4700 – Game Development
 *assignment: Program 3
-*date last modified: 10/05/24
+*date last modified: 10/11/24
 *
 *purpose: This program controls the behavior of the possum enemy 
-*         in the game, including its movement and attack behavior.
+*         in the game, including its movement, attack, and jumping
+*         behavior.
 *
 ****************************************************************/
 
@@ -16,9 +17,9 @@ using UnityEngine;
 
 public class Possum : MonoBehaviour
 {
-    private Animator bossAnimator; 
-    private Rigidbody2D rb; 
-    private Transform player; 
+    private Animator bossAnimator;
+    private Rigidbody2D rb;
+    private Transform player;
 
     private int currentHealth; // current health
     public int maxHealth = 15; // max health of the boss
@@ -26,6 +27,7 @@ public class Possum : MonoBehaviour
     public float attackCooldown = 6.0f; // time between attacks
     public float attackRange = 15.0f; // distance when boss will attack player
     private float nextAttackTime; // when the boss can attack again
+    public float jumpForce = 30.0f; // force applied to the jump
 
     public GameObject garbagePrefab; // prefab for the garbage thrown by the boss
     public Transform garbageSpawnPoint;
@@ -89,6 +91,27 @@ public class Possum : MonoBehaviour
         }
     }
 
+    // function: OnCollisionEnter2D
+    // purpose: detects when the possum collides with a wall and triggers a jump
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        // check if the colliding object is a wall
+        if(collision.gameObject.CompareTag("Wall"))
+        {
+            Jump(); // make possum jump
+        }
+    }
+
+    // function: Jump
+    // purpose: applies a force to the possum to make it jump
+    private void Jump()
+    {
+        if(rb != null)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce); // set vertical velocity to jumpForce
+        }
+    }
+
     // function: CheckAttack
     // purpose: determines if the boss can attack based on the distance to the player and attack cooldown
     void CheckAttack()
@@ -111,7 +134,7 @@ public class Possum : MonoBehaviour
     IEnumerator ThrowGarbage()
     {
         // countdown before possum attacks again
-        for (int i = 6; i > 0; i--)
+        for(int i = 6; i > 0; i--)
         {
             Debug.Log($"Boss will attack in {i}...");
             yield return new WaitForSeconds(1);
@@ -141,14 +164,7 @@ public class Possum : MonoBehaviour
     {
         currentHealth -= damage; // reduce health
 
-        /*
-         * if(healthBar != null)
-        {
-            healthBar.fillAmount = (float)currentHealth / maxHealth; // update health bar
-        }
-        */
-
-        Debug.Log("Possum current health: " + currentHealth);
+        Debug.Log("Possum current health: " + currentHealth); // prints current health
 
         if(currentHealth <= 0)
         {
