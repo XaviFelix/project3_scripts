@@ -1,13 +1,13 @@
 /***************************************************************
 *file: Possum.cs
 *author: Marie Philavong & Xavier Felix
-*class: CS 4700 – Game Development
+*class: CS 4700 - Game Development
 *assignment: Program 3
 *date last modified: 10/11/24
 *
 *purpose: This program controls the behavior of the possum enemy 
-*         in the game, including its movement, attack, and jumping
-*         behavior.
+*         in the game, including its movement, attack, and
+*         jumping behavior.
 *
 ****************************************************************/
 
@@ -21,6 +21,9 @@ public class Possum : MonoBehaviour
     private Rigidbody2D rb;
     private Transform player;
 
+    public GameObject garbagePrefab; // prefab for garbage thrown by boss
+    public Transform garbageSpawnPoint;
+
     private int currentHealth; // current health
     public int maxHealth = 15; // max health of the boss
     public float movementSpeed = 2.0f; // movement speed
@@ -29,13 +32,9 @@ public class Possum : MonoBehaviour
     private float nextAttackTime; // when the boss can attack again
     public float jumpForce = 30.0f; // force applied to the jump
 
-    public GameObject garbagePrefab; // prefab for the garbage thrown by the boss
-    public Transform garbageSpawnPoint;
-
     // function: Start
-    // purpose: called before the first frame update. it initializes the possum's 
-    //          health and finds references to the player's transform, Animator, and Rigidbody2D
-    //          components at the start of the game.
+    // purpose: called before the first frame update; initializes the possum's 
+    //          health and finds references to the player's transform
     void Start()
     {
         currentHealth = maxHealth; // initialize health
@@ -45,8 +44,8 @@ public class Possum : MonoBehaviour
     }
 
     // function: Update
-    // purpose: called once per frame. it continuously moves the possum towards the
-    //          player and checks for attack eligibility.
+    // purpose: called once per frame; continuously moves the possum towards the
+    //          player and checks for attack eligibility
     void Update()
     {
         Move();
@@ -56,37 +55,40 @@ public class Possum : MonoBehaviour
     // function: Move
     // purpose: moves the boss towards the player only when the player is within the attack range.
     //          it also updates the boss's movement animation and facing direction accordingly.
-    //          if the player is outside the attack range, the boss remains idle
+    //          if the player is outside the attack range, the boss remains idle.
     void Move()
     {
-        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
-
-        // move the boss towards the player only if they are within the attack range
-        if(distanceToPlayer <= attackRange && distanceToPlayer > 1.0f)
+        if(player  != null)
         {
-            Vector2 direction = (player.position - transform.position).normalized;
-            transform.position = Vector2.MoveTowards(transform.position, player.position, movementSpeed * Time.deltaTime);
+            float distanceToPlayer = Vector2.Distance(transform.position, player.position);
 
-            if(bossAnimator != null)
+            // move the boss towards the player only if they are within the attack range
+            if(distanceToPlayer <= attackRange && distanceToPlayer > 1.0f)
             {
-                bossAnimator.SetBool("isMoving", true); // set moving animation
+                Vector2 direction = (player.position - transform.position).normalized;
+                transform.position = Vector2.MoveTowards(transform.position, player.position, movementSpeed * Time.deltaTime);
 
-                // adjust boss's facing direction based on movement
-                if(direction.x > 0)
+                if(bossAnimator != null)
                 {
-                    transform.localScale = new Vector3(1, 1, 1); // face right
-                }
-                else if(direction.x < 0)
-                {
-                    transform.localScale = new Vector3(-1, 1, 1); // face left
+                    bossAnimator.SetBool("isMoving", true); // set moving animation
+
+                    // adjust boss's facing direction based on movement
+                    if(direction.x > 0)
+                    {
+                        transform.localScale = new Vector3(1, 1, 1); // face right
+                    }
+                    else if(direction.x < 0)
+                    {
+                        transform.localScale = new Vector3(-1, 1, 1); // face left
+                    }
                 }
             }
-        }
-        else
-        {
-            if(bossAnimator != null)
+            else
             {
-                bossAnimator.SetBool("isMoving", false); // set idle animation
+                if(bossAnimator != null)
+                {
+                    bossAnimator.SetBool("isMoving", false); // set idle animation
+                }
             }
         }
     }
@@ -143,15 +145,19 @@ public class Possum : MonoBehaviour
         GameObject garbage = Instantiate(garbagePrefab, garbageSpawnPoint.position, Quaternion.identity);
         Rigidbody2D rbGarbage = garbage.GetComponent<Rigidbody2D>();
 
+        // calculate direction to player
         Vector2 directionToPlayer = (player.position - garbageSpawnPoint.position).normalized;
         float distanceToPlayer = Vector2.Distance(garbageSpawnPoint.position, player.position);
 
+        // calculate launch speed based on distance and gravity
         float gravity = Mathf.Abs(Physics2D.gravity.y);
         float launchHeight = 2.0f; // set arc height
         float launchSpeed = Mathf.Sqrt(gravity * distanceToPlayer); // calculate launch speed
 
+        // set velocity for arc
         rbGarbage.velocity = new Vector2(launchSpeed * directionToPlayer.x, launchHeight); // launch garbage
 
+        // rotate garbage to face the direction of movement
         float angle = Mathf.Atan2(directionToPlayer.y, directionToPlayer.x) * Mathf.Rad2Deg;
         garbage.transform.rotation = Quaternion.Euler(0, 0, angle); // rotate garbage to face the player
 
@@ -176,7 +182,7 @@ public class Possum : MonoBehaviour
     // purpose: handles boss death and destroys the Possum GameObject
     void Die()
     {
-        Debug.Log("Boss defeated!");
+        Debug.Log("Boss defeated! Game over!");
         Destroy(gameObject);
     }
 }
